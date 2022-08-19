@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import logger from 'morgan';
 import dotenv from 'dotenv';
-
 import authenticateMiddleware from './middleware/authenticate.mjs';
 
 import usersRouter from './route/users.mjs';
@@ -15,6 +14,7 @@ import permissionsRouter from './route/permission.mjs';
  ******************************************************/
 dotenv.config();
 const app = express();
+
 app.use(logger(process.env.LOGGER));
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -24,9 +24,9 @@ app.use(cors());
 /******************************************************
  * Set routers
  ******************************************************/
-app.use('/users/', usersRouter);
-app.use('/roles/', rolesRouter);
-app.use('/permissions/', permissionsRouter);
+app.use('/v1/', usersRouter);
+app.use('/v1/', rolesRouter);
+app.use('/v1/', permissionsRouter);
 
 // error handler
 app.use(function (err, req, res, next) {
