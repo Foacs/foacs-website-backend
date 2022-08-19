@@ -1,4 +1,6 @@
 import express from 'express';
+import {StatusCodes} from 'http-status-codes';
+
 import {
   create,
   update,
@@ -6,6 +8,8 @@ import {
   getOne,
   deleteOne,
 } from '../controller/permissionController.mjs';
+import permissionConverter from '../converter/permissionConverter.mjs';
+import {handleError} from './utils/errorUtils.mjs';
 
 /******************************************************
  * Create router
@@ -15,87 +19,90 @@ const router = express.Router();
 /******************************************************
  * Route
  ******************************************************/
-router.get('/', (_req, res) => {
+router.get('/permissions/', (_req, res) => {
   getAll()
     .then((rows) => {
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         success: true,
         message: 'data found',
         data: {
-          permissions: rows,
+          permissions: rows.map(permissionConverter),
         },
+        links: [
+          {
+            rel: 'self',
+            method: 'GET',
+            href: '/permissions/',
+          },
+          {
+            rel: 'create',
+            method: 'POST',
+            href: '/permissions/',
+          },
+        ],
       });
     })
-    .catch((error) => {
-      res.status(error.status ?? 500).json(error.body);
-    });
+    .catch((error) => handleError(res, error));
 });
 
-router.get('/:id', (req, res) => {
+router.get('/permissions/:id', (req, res) => {
   getOne(req.params.id)
     .then((row) => {
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         success: true,
         message: 'data found',
-        data: {
-          permission: row,
-        },
+        ...permissionConverter(row),
       });
     })
-    .catch((error) => {
-      res.status(error.status ?? 500).json(error.body);
-    });
+    .catch((error) => handleError(res, error));
 });
 
-router.post('/', (req, res) => {
+router.post('/permissions/', (req, res) => {
   const permissionInfo = req.body;
   create(permissionInfo)
     .then((dbRes) => {
-      res.status(200).json({
+      permissionInfo.id = Number(dbRes.insertId);
+      res.status(StatusCodes.OK).json({
         success: true,
-        message: `permission ${dbRes.insertId} has been submitted successfully`,
-        data: {
-          permission: permissionInfo,
-        },
+        message: `permission ${permissionInfo.id} has been submitted successfully`,
+        ...permissionConverter(permissionInfo),
       });
     })
-    .catch((error) => {
-      res.status(error.status ?? 500).json(error.body);
-    });
+    .catch((error) => handleError(res, error));
 });
 
-router.put('/:id', (req, res) => {
+router.put('/permissions/:id', (req, res) => {
   const permissionInfo = req.body;
-  const id = req.params.id;
-  update(id, permissionInfo)
+  permissionInfo.id = req.params.id;
+  update(permissionInfo.id, permissionInfo)
     .then(() => {
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         success: true,
-        message: `permission ${id} has been updated successfully`,
-        data: {
-          permission: permissionInfo,
-        },
+        message: `permission ${permissionInfo.id} has been updated successfully`,
+        ...permissionConverter(permissionInfo),
       });
     })
-    .catch((error) => {
-      console.log(error);
-      res.status(error.status ?? 500).json(error.body);
-    });
+    .catch((error) => handleError(res, error));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/permissions/:id', (req, res) => {
   const id = req.params.id;
   deleteOne(id)
     .then(() => {
-      res.status(200).json({
+      res.status(StatusCodes.OK).json({
         success: true,
         message: `permission ${id} has been deleted successfully`,
         data: {},
+        links: [
+          {
+            rel: 'self',
+            method: 'DELETE',
+            href: `/permissions/${id}`,
+          },
+        ],
       });
     })
-    .catch((error) => {
-      res.status(error.status ?? 500).json(error.body);
-    });
+    .catch((error) => handleError(res, error));
 });
 
 export default router;

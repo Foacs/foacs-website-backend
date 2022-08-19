@@ -152,6 +152,44 @@ export const update = async (id, role) => {
   }
 };
 
+export const addPermission = async (id, permissionId) => {
+  const sqlQuery =
+    'INSERT INTO roles_permissions(role_id, permission_id) VALUE (?, ?)';
+  try {
+    return await pool.query(sqlQuery, [id, permissionId]);
+  } catch (error) {
+    console.error(error);
+    throw {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        success: false,
+        message: 'unable to add permission to role',
+        error_code: ErrorCodes.ERR_CDE_UPDATE,
+        data: {},
+      },
+    };
+  }
+};
+
+export const removePermission = async (id, permissionId) => {
+  const sqlQuery =
+    'DELETE FROM roles_permissions WHERE role_id = ? AND permission_id = ?';
+  try {
+    return await pool.query(sqlQuery, [id, permissionId]);
+  } catch (error) {
+    console.error(error);
+    throw {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        success: false,
+        message: 'unable to delete permission from role',
+        error_code: ErrorCodes.ERR_CDE_UPDATE,
+        data: {},
+      },
+    };
+  }
+};
+
 export const deleteOne = async (id) => {
   const sqlQuery = 'DELETE FROM roles WHERE id = ?';
   try {

@@ -185,6 +185,42 @@ export const update = async (id, user) => {
   }
 };
 
+export const addRole = async (id, roleId) => {
+  const sqlQuery = 'INSERT INTO users_roles(user_id, role_id) VALUE (?, ?)';
+  try {
+    return await pool.query(sqlQuery, [id, roleId]);
+  } catch (error) {
+    console.error(error);
+    throw {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        success: false,
+        message: 'unable to add role to user',
+        error_code: ErrorCodes.ERR_CDE_UPDATE,
+        data: {},
+      },
+    };
+  }
+};
+
+export const removeRole = async (id, roleId) => {
+  const sqlQuery = 'DELETE FROM users_roles WHERE user_id = ? AND role_id = ?';
+  try {
+    return await pool.query(sqlQuery, [id, roleId]);
+  } catch (error) {
+    console.error(error);
+    throw {
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+      body: {
+        success: false,
+        message: 'unable to delete role from user',
+        error_code: ErrorCodes.ERR_CDE_UPDATE,
+        data: {},
+      },
+    };
+  }
+};
+
 export const deleteOne = async (id) => {
   const sqlQuery = 'DELETE FROM users WHERE id = ?';
   try {
